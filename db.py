@@ -8,9 +8,9 @@ CREATE TABLE IF NOT EXISTS pairs (
     lon REAL NOT NULL,
     alat REAL NOT NULL,
     alon REAL NOT NULL,
-    tempF REAL,
+    tempK REAL,
     pres REAL,
-    atempF REAL,
+    atempK REAL,
     apres REAL,
     temp_rel_diff REAL,
     pres_rel_diff REAL,
@@ -39,14 +39,14 @@ def upsert_pair(con, row: Dict[str, Any]):
     """Insert or replace a pair record by (lat, lon)."""
     con.execute(
         """
-        INSERT INTO pairs(lat, lon, alat, alon, tempF, pres, atempF, apres, temp_rel_diff, pres_rel_diff, is_match, checked_at)
-        VALUES(:lat, :lon, :alat, :alon, :tempF, :pres, :atempF, :apres, :temp_rel_diff, :pres_rel_diff, :is_match, :checked_at)
+        INSERT INTO pairs(lat, lon, alat, alon, tempK, pres, atempK, apres, temp_rel_diff, pres_rel_diff, is_match, checked_at)
+        VALUES(:lat, :lon, :alat, :alon, :tempK, :pres, :atempK, :apres, :temp_rel_diff, :pres_rel_diff, :is_match, :checked_at)
         ON CONFLICT(lat, lon) DO UPDATE SET
             alat=excluded.alat,
             alon=excluded.alon,
-            tempF=excluded.tempF,
+            tempK=excluded.tempK,
             pres=excluded.pres,
-            atempF=excluded.atempF,
+            atempK=excluded.atempK,
             apres=excluded.apres,
             temp_rel_diff=excluded.temp_rel_diff,
             pres_rel_diff=excluded.pres_rel_diff,
@@ -67,7 +67,7 @@ def exists_either(con, lat: float, lon: float, alat: float, alon: float) -> bool
 
 def get_matches(con) -> list:
     cur = con.cursor()
-    cur.execute("SELECT checked_at, lat, lon, alat, alon, tempF, pres, atempF, apres FROM pairs WHERE is_match=1")
+    cur.execute("SELECT checked_at, lat, lon, alat, alon, tempK, pres, atempK, apres FROM pairs WHERE is_match=1")
     return cur.fetchall()
 
 def get_stats(con) -> dict:
