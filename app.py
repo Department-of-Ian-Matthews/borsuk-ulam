@@ -41,12 +41,12 @@ with st.sidebar:
         help="File to persist results for resuming later."
     )
     granularity_la = st.number_input(
-        "Latitude grid granularity (degrees)", min_value=0.1, max_value=10.0,
-        value=1.0, step=0.1, help="Distance between latitude grid points."
+        "Latitude grid granularity (degrees)", min_value=0.005, max_value=10.0,
+        value=0.05, step=0.05, help="Distance between latitude grid points."
     )
     granularity_lo = st.number_input(
-        "Longitude grid granularity (degrees)", min_value=0.1, max_value=10.0,
-        value=1.0, step=0.1, help="Distance between longitude grid points."
+        "Longitude grid granularity (degrees)", min_value=0.005, max_value=10.0,
+        value=0.05, step=0.05, help="Distance between longitude grid points."
     )
     lat_min, lat_max = st.slider(
         "Latitude range (°)", min_value=-90, max_value=90,
@@ -61,11 +61,11 @@ with st.sidebar:
     st.caption("Matching tolerances (relative %)")
     tol_temp = st.number_input(
         "Temperature tolerance %", min_value=0.1, max_value=20.0,
-        value=1.0, step=0.1
+        value=0.1, step=0.1
     ) / 100.0
     tol_pres = st.number_input(
         "Pressure tolerance %", min_value=0.1, max_value=20.0,
-        value=1.0, step=0.1
+        value=0.1, step=0.1
     ) / 100.0
 
     st.divider()
