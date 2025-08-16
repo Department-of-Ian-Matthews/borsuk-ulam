@@ -76,12 +76,14 @@ with st.sidebar:
         "How many new coords to test when you click CONTINUE",
         min_value=1, max_value=2000, value=100, step=1
     )
+
+# st.divider()
+# do_reverse_geocode = st.checkbox(
+#    "Annotate with nearest city (Nominatim, ~1 req/sec)",
+#    value=False
+#)
+
     
-    st.divider()
-    do_reverse_geocode = st.checkbox(
-        "Annotate with nearest city (Nominatim, ~1 req/sec)",
-        value=False
-    )
     
     
 
@@ -301,7 +303,7 @@ else:
     )
     st.pydeck_chart(deck, use_container_width=True)
 
-
+"""
 # --- Optional reverse geocoding AFTER rendering (slow) ---
 if do_reverse_geocode and len(df) > 0:
     with st.status("Annotating with nearest cities...", expanded=False) as status:
@@ -320,6 +322,8 @@ if do_reverse_geocode and len(df) > 0:
         df["place"] = names; df["place_km"] = dists
         df["aplace"] = anames; df["aplace_km"] = adists
         status.update(label="Done annotating.", state="complete")
+"""
+
 
 st.subheader("Matched pairs")
 st.dataframe(df)
