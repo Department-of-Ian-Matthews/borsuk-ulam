@@ -67,7 +67,7 @@ def exists_either(con, lat: float, lon: float, alat: float, alon: float) -> bool
 
 def get_matches(con) -> list:
     cur = con.cursor()
-    cur.execute("SELECT lat, lon, alat, alon, tempK, pres, atempK, apres FROM pairs WHERE is_match=1")
+    cur.execute("SELECT checked_at, lat, lon, alat, alon, tempK, pres, atempK, apres FROM pairs WHERE is_match=1")
     return cur.fetchall()
 
 def get_stats(con) -> dict:

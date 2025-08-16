@@ -4,3 +4,4 @@ numpy>=1.26
 pandas>=2.2
 requests>=2.31
 geopy>=2.4
+pydeck>=0.9
