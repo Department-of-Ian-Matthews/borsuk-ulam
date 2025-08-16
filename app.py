@@ -146,7 +146,7 @@ def test_one_pair(lat, lon, tol_temp, tol_pres):
         now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M")
         upsert_pair(con, {
             "lat": lat, "lon": lon, "alat": a_lat, "alon": a_lon,
-            "tempK": None, "pres": None, "atempK": None, "apres": None,
+            "tempF": None, "pres": None, "atempF": None, "apres": None,
             "temp_rel_diff": None, "pres_rel_diff": None,
             "is_match": 0, "checked_at": now
         })
@@ -156,19 +156,23 @@ def test_one_pair(lat, lon, tol_temp, tol_pres):
     t2C = data["p2"]["tempC"]; p2 = data["p2"]["pres"]
     t1K = t1C + 273.15
     t2K = t2C + 273.15
+    
+    
+    t1F = t1C*(9/5) + 32
+    t2F = t2C*(9/5) + 32
 
-    rtemp = rel_diff(t1K, t2K)
+    rtemp = rel_diff(t1K, t2F)
     rpres = rel_diff(p1, p2)
     match = int((rtemp <= tol_temp) and (rpres <= tol_pres))
 
     now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M")
     upsert_pair(con, {
         "lat": lat, "lon": lon, "alat": a_lat, "alon": a_lon,
-        "tempK": t1K, "pres": p1, "atempK": t2K, "apres": p2,
+        "tempF": t1F, "pres": p1, "atempF": t2F, "apres": p2,
         "temp_rel_diff": rtemp, "pres_rel_diff": rpres,
         "is_match": match, "checked_at": now
     })
-    return (lat, lon, a_lat, a_lon, t1K, p1, t2K, p2, rtemp, rpres, match, now)
+    return (lat, lon, a_lat, a_lon, t1F, p1, t2F, p2, rtemp, rpres, match, now)
 
 # --- When CONTINUE is pressed ---
 progress = st.empty()
@@ -199,7 +203,7 @@ if do_continue:
 rows = get_matches(con)
 df = pd.DataFrame(
     rows,
-    columns=["checked_at", "lat", "lon", "alat", "alon", "tempK", "pres", "atempK", "apres"]
+    columns=["checked_at", "lat", "lon", "alat", "alon", "tempF", "pres", "atempF", "apres"]
 )
 
 # --- PYDECK GLOBE (render immediately) ---
@@ -212,12 +216,12 @@ if len(df) == 0:
     st.info("No matches yet.")
 else:
     # Build plotting tables
-    base = df[["lat", "lon", "tempK", "pres"]].copy()
+    base = df[["lat", "lon", "tempF", "pres"]].copy()
     base["kind"] = "Match"
     base["pair_id"] = base.index  # stable id per row
 
-    anti = df[["alat", "alon", "atempK", "apres"]].rename(
-        columns={"alat": "lat", "alon": "lon", "atempK": "tempK", "apres": "pres"}
+    anti = df[["alat", "alon", "atempF", "apres"]].rename(
+        columns={"alat": "lat", "alon": "lon", "atempF": "tempF", "apres": "pres"}
     )
     anti["kind"] = "Antipode"
     anti["pair_id"] = anti.index
@@ -277,7 +281,7 @@ else:
             "<b>{kind}</b>"
             "<br/>Lat: {lat}"
             "<br/>Lon: {lon}"
-            "<br/>T: {tempK} K"
+            "<br/>T: {tempF} F"
             "<br/>P: {pres} hPa"
         ),
         "style": {"backgroundColor": "rgba(0,0,0,0.85)", "color": "white"},
