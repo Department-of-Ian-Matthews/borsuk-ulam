@@ -40,9 +40,13 @@ with st.sidebar:
         value="borsuk_ulam.sqlite",
         help="File to persist results for resuming later."
     )
-    granularity = st.number_input(
-        "Grid granularity (degrees)", min_value=0.1, max_value=10.0,
-        value=1.0, step=0.1, help="Distance between grid points."
+    granularity_la = st.number_input(
+        "Latitude grid granularity (degrees)", min_value=0.1, max_value=10.0,
+        value=1.0, step=0.1, help="Distance between latitude grid points."
+    )
+    granularity_lo = st.number_input(
+        "Longitude grid granularity (degrees)", min_value=0.1, max_value=10.0,
+        value=1.0, step=0.1, help="Distance between longitude grid points."
     )
     lat_min, lat_max = st.slider(
         "Latitude range (°)", min_value=-90, max_value=90,
@@ -57,11 +61,11 @@ with st.sidebar:
     st.caption("Matching tolerances (relative %)")
     tol_temp = st.number_input(
         "Temperature tolerance %", min_value=0.1, max_value=20.0,
-        value=5.0, step=0.1
+        value=1.0, step=0.1
     ) / 100.0
     tol_pres = st.number_input(
         "Pressure tolerance %", min_value=0.1, max_value=20.0,
-        value=5.0, step=0.1
+        value=1.0, step=0.1
     ) / 100.0
 
     st.divider()
@@ -77,37 +81,28 @@ with st.sidebar:
         min_value=1, max_value=2000, value=100, step=1
     )
 
-# st.divider()
-# do_reverse_geocode = st.checkbox(
-#    "Annotate with nearest city (Nominatim, ~1 req/sec)",
-#    value=False
-#)
-
-    
-    
-    
 
 # --- DB init ---
 con = connect(db_path)
 init_db(con)
 
 # --- Candidate grid ---
-def build_candidates(lat_min, lat_max, lon_min, lon_max, gran):
-    lats = np.arange(lat_min, lat_max + 1e-9, gran).tolist()
-    lons = np.arange(lon_min, lon_max - 1e-9, gran).tolist()
+def build_candidates(lat_min, lat_max, lon_min, lon_max, gran_la, gran_lo):
+    lats = np.arange(lat_min, lat_max + 1e-9, gran_la).tolist()
+    lons = np.arange(lon_min, lon_max - 1e-9, gran_lo).tolist()
     random.shuffle(lats)
     random.shuffle(lons)
     cand = []
     for la in lats:
         for lo in lons:
-            la = float(round_to_granularity(la, gran))
-            lo = float(round_to_granularity(lo, gran))
+            la = float(round_to_granularity(la, gran_la))
+            lo = float(round_to_granularity(lo, gran_lo))
             ala, alo = antipode(la, lo)
             cand.append((la, lo, float(ala), float(alo)))
     random.shuffle(cand)
     return cand
 
-candidates = build_candidates(lat_min, lat_max, lon_min, lon_max, granularity)
+candidates = build_candidates(lat_min, lat_max, lon_min, lon_max, granularity_la, granularity_lo)
 
 # --- Stats (LIVE-UPDATING) ---
 stats_cols = st.columns(2)
@@ -212,6 +207,19 @@ df = pd.DataFrame(
     columns=["checked_at", "lat", "lon", "alat", "alon", "tempK", "pres", "atempK", "apres"]
 )
 
+# Add Fahrenheit columns ONLY for display (DB still stores Kelvin)
+def K_to_F(k):
+    if k is None:
+        return None
+    try:
+        return (float(k) - 273.15) * 9.0 / 5.0 + 32.0
+    except (TypeError, ValueError):
+        return None
+
+df["tempF"]  = df["tempK"].apply(K_to_F)
+df["atempF"] = df["atempK"].apply(K_to_F)
+
+
 # --- PYDECK GLOBE (render immediately) ---
 st.subheader("3D matches on Earth (globe)")
 
@@ -303,32 +311,20 @@ else:
     )
     st.pydeck_chart(deck, use_container_width=True)
 
-"""
-# --- Optional reverse geocoding AFTER rendering (slow) ---
-if do_reverse_geocode and len(df) > 0:
-    with st.status("Annotating with nearest cities...", expanded=False) as status:
-        names, dists, anames, adists = [], [], [], []
-        for _, r in df.iterrows():
-            try:
-                name, dist = closest_place(r["lat"], r["lon"])
-            except Exception:
-                name, dist = "Unknown", float("nan")
-            try:
-                aname, adist = closest_place(r["alat"], r["alon"])
-            except Exception:
-                aname, adist = "Unknown", float("nan")
-            names.append(name); dists.append(dist)
-            anames.append(aname); adists.append(adist)
-        df["place"] = names; df["place_km"] = dists
-        df["aplace"] = anames; df["aplace_km"] = adists
-        status.update(label="Done annotating.", state="complete")
-"""
 
 
 st.subheader("Matched pairs")
-st.dataframe(df)
-
-st.info(
-    "Tip: Put the SQLite file in a shared folder (e.g., network drive or cloud sync). "
-    "Anyone running this app and pointing to the same DB path can continue where you left off."
+st.dataframe(
+    df[["checked_at",
+        "lat",
+        "lon",
+        "alat",
+        "alon",
+        "tempK",
+        "atempK",
+        "tempF",
+        "atempF",
+        "pres",
+        "apres"]]
 )
+
