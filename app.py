@@ -77,6 +77,16 @@ with st.sidebar:
         min_value=1, max_value=2000, value=100, step=1
     )
 
+# st.divider()
+# do_reverse_geocode = st.checkbox(
+#    "Annotate with nearest city (Nominatim, ~1 req/sec)",
+#    value=False
+#)
+
+    
+    
+    
+
 # --- DB init ---
 con = connect(db_path)
 init_db(con)
@@ -297,8 +307,32 @@ else:
     )
     st.pydeck_chart(deck, use_container_width=True)
 
+"""
+# --- Optional reverse geocoding AFTER rendering (slow) ---
+if do_reverse_geocode and len(df) > 0:
+    with st.status("Annotating with nearest cities...", expanded=False) as status:
+        names, dists, anames, adists = [], [], [], []
+        for _, r in df.iterrows():
+            try:
+                name, dist = closest_place(r["lat"], r["lon"])
+            except Exception:
+                name, dist = "Unknown", float("nan")
+            try:
+                aname, adist = closest_place(r["alat"], r["alon"])
+            except Exception:
+                aname, adist = "Unknown", float("nan")
+            names.append(name); dists.append(dist)
+            anames.append(aname); adists.append(adist)
+        df["place"] = names; df["place_km"] = dists
+        df["aplace"] = anames; df["aplace_km"] = adists
+        status.update(label="Done annotating.", state="complete")
+"""
+
 
 st.subheader("Matched pairs")
 st.dataframe(df)
 
-
+st.info(
+    "Tip: Put the SQLite file in a shared folder (e.g., network drive or cloud sync). "
+    "Anyone running this app and pointing to the same DB path can continue where you left off."
+)
