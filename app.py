@@ -16,15 +16,6 @@ from db import (
 from fetch import fetch_openmeteo_pair
 from geocode import closest_place
 
-# --- Writable location for Streamlit Cloud vs local ---
-CLOUD_DATA_DIR = os.environ.get("STREAMLIT_DATA_DIR", "/mount/data")
-try:
-    os.makedirs(CLOUD_DATA_DIR, exist_ok=True)
-except Exception:
-    pass
-DEFAULT_DB = os.path.join(CLOUD_DATA_DIR, "borsuk_ulam.sqlite")
-
-
 # ---- Streamlit page ----
 st.set_page_config(page_title="Borsuk-Ulam Globe", layout="wide")
 st.title("🌍 Borsuk-Ulam Globe — Same temperature & pressure antipodes")
@@ -45,9 +36,9 @@ pdk.settings.custom_libraries = [
 with st.sidebar:
     st.header("Controls")
     db_path = st.text_input(
-    "SQLite DB path",
-    value=DEFAULT_DB,   # was "borsuk_ulam.sqlite"
-    help="File to persist results for resuming later."
+        "SQLite DB path",
+        value="borsuk_ulam.sqlite",
+        help="File to persist results for resuming later."
     )
     granularity_la = st.number_input(
         "Latitude grid granularity (degrees)", min_value=0.005, max_value=10.0,
