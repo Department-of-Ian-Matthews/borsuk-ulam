@@ -41,12 +41,12 @@ with st.sidebar:
         help="File to persist results for resuming later."
     )
     granularity_la = st.number_input(
-        "Latitude grid granularity (degrees)", min_value=0.005, max_value=10.0,
-        value=0.10, step=0.10, help="Distance between latitude grid points."
+        "Latitude grid granularity (degrees)", min_value=0.10, max_value=10.0,
+        value=0.50, step=0.10, help="Distance between latitude grid points."
     )
     granularity_lo = st.number_input(
-        "Longitude grid granularity (degrees)", min_value=0.005, max_value=10.0,
-        value=0.10, step=0.10, help="Distance between longitude grid points."
+        "Longitude grid granularity (degrees)", min_value=0.10, max_value=10.0,
+        value=0.50, step=0.10, help="Distance between longitude grid points."
     )
     lat_min, lat_max = st.slider(
         "Latitude range (°)", min_value=-90, max_value=90,
