@@ -118,26 +118,7 @@ def refresh_metrics():
 refresh_metrics()
 
 # --- Buttons ---
-colA, colB = st.columns([1, 1])
-with colA:
-    do_continue = st.button("▶️ CONTINUE", use_container_width=True)
-with colB:
-    clear_cache = st.button("🧹 Clear DB (danger)", use_container_width=True)
-
-# --- Clear DB (soft clear + VACUUM in autocommit) ---
-if clear_cache:
-    st.warning("Clearing the current database...")
-    # Delete rows in a normal transaction
-    with con:
-        con.execute("DELETE FROM pairs;")
-    # VACUUM must run outside a transaction; open a temp autocommit connection
-    tmp = sqlite3.connect(db_path, isolation_level=None)
-    try:
-        tmp.execute("VACUUM")
-    finally:
-        tmp.close()
-    refresh_metrics()
-    st.success("DB cleared (rows deleted + compacted).")
+do_continue = st.button("▶️ CONTINUE", use_container_width=True)
 
 # --- Core worker ---
 def test_one_pair(lat, lon, tol_temp, tol_pres):
